@@ -2,49 +2,60 @@ import json
 from pathlib import Path
 import os
 import shutil
+import threading
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
+from modules.Handler import Handler
+import time
+
+flag_stop = False
 
 class Execute:
   def __init__(self):
-    pass
+    self.modes = ['default', 'user']
+    print('Modes:', self.modes)
+    mode = input('Mode Select: ').strip().lower()
 
-  def default(self):
-    downloadsPath = Path.home() / "Downloads"
-    documentsPath = Path.home() / "Documents"
-    recentlyDownloaded = documentsPath / "Recently Downloaded"
-    try:
-      os.mkdir(recentlyDownloaded)
-    except FileExistsError as e:
-      print(f'Path already exists: {e}')
+    if mode in self.modes:
+      method_name = f"m_{mode}"  # Generate the method name
+      if hasattr(self, method_name):  # Check if the method exists
+        getattr(self, method_name)()  # Call the method dynamically
+      else:
+        print(f"Error: Method '{method_name}' not found.")
+    else:
+      print("Invalid mode selected.")
 
-    folders = ['Images & Pictures', 'Music & Audio', 'Compressed & Zipped', 'Documents', 'Executables', 'Videos']
+  def m_default(self):
+    fileExtensions = {
+      'executable' : ('.apk', '.app', '.bat', '.bin', '.cmd', '.com', '.exe', '.ipa', '.jar', '.run', '.sh'),
+      'compressed' : ('.7z', '.cbr', '.deb', '.gz', '.pkg', '.rar','.rpm', '.tar.gz', '.xapk', '.zip', '.zipx', '.tgz', '.tar.xz', '.tar.bz2'),
+      'image' : ('.bmp', '.dcm', '.dds', '.djvu', '.gif', '.heic', '.jpg', '.png', '.psd', '.tga', '.tif', '.webp', '.ai', '.cdr', '.emf', '.eps', '.ps', '.sketch', '.svg', '.vsdx'),
+      'video' : ('.3gp', '.asf', '.avi', '.flv', '.m4v', '.mov', '.mp4', '.mpg', '.srt', '.swf', '.ts', '.vob', '.mkv', '.webm'),
+      'audio' : ('.aif', '.flac', '.m3u', '.m4a', '.mid', '.mp3', '.ogg', '.wav', '.wma'),
+      'document' : ('.doc', '.docx', '.eml', '.msg', '.odt', '.pages', '.rtf', '.tex', '.txt', '.wpd', '.pdf')
+    }
+    thread_downloadsWatch = threading.Thread(target=self.downloadsWatch(fileExtensions))
+    thread_downloadsWatch.start()
 
-    for folder in folders:
-      try:
-        os.mkdir(recentlyDownloaded / folder)
-      except FileExistsError as e:
-        print(f'Path already exists: {e}')
+    timeCount = 0
+    while True:
+      cmd = input('# ').strip().lower()
+      if cmd == 'stop':
+        return
 
-    downloadsFiles = os.listdir(downloadsPath)
-    executableExtensions = ('.apk', '.app', '.bat', '.bin', '.cmd', '.com', '.exe', '.ipa', '.jar', '.run', '.sh')
-    compressedExtensions = ('.7z', '.cbr', '.deb', '.gz', '.pkg', '.rar','.rpm', '.tar.gz', '.xapk', '.zip', '.zipx', '.tgz', '.tar.xz', '.tar.bz2')
-    imagesExtensions = ('.bmp', '.dcm', '.dds', '.djvu', '.gif', '.heic', '.jpg', '.png', '.psd', '.tga', '.tif', '.webp', '.ai', '.cdr', '.emf', '.eps', '.ps', '.sketch', '.svg', '.vsdx')
-    videoExtensions = ('.3gp', '.asf', '.avi', '.flv', '.m4v', '.mov', '.mp4', '.mpg', '.srt', '.swf', '.ts', '.vob', '.mkv', '.webm')
-    audioExtensions = ('.aif', '.flac', '.m3u', '.m4a', '.mid', '.mp3', '.ogg', '.wav', '.wma')
-    documentExtensions = ('.doc', '.docx', '.eml', '.msg', '.odt', '.pages', '.rtf', '.tex', '.txt', '.wpd', '.pdf')
+  def m_user(self):
+    print('User Mode Activated.')
 
-    for file in downloadsFiles:
-      if file.endswith(executableExtensions):
-        shutil.move(downloadsPath / file, recentlyDownloaded / 'Executables')
-      elif file.endswith(compressedExtensions):
-        shutil.move(downloadsPath / file, recentlyDownloaded / 'Compressed & Zipped')
-      elif file.endswith(videoExtensions):
-        shutil.move(downloadsPath / file, recentlyDownloaded / 'Videos')
-      elif file.endswith(imagesExtensions):
-        shutil.move(downloadsPath / file, recentlyDownloaded / 'Images & Pictures')
-      elif file.endswith(documentExtensions):
-        shutil.move(downloadsPath / file, recentlyDownloaded / 'Documents')
-      elif file.endswith(audioExtensions):
-        shutil.move(downloadsPath / file, recentlyDownloaded / 'Music & Audio')
+  def downloadsWatch(self, extensions : map):
+    path = Path.home() / "Downloads"
+    event_handler = Handler(extensions)
+    observer = Observer()
+    observer.schedule(event_handler, path, recursive=True)
+    observer.start()
 
-  def userDefault(self):
-    pass
+  def listen_downloadsDirProcessor(self):
+    global flag_stop
+    print("Type 'stop' to end process.")
+    cmd = input('# ').strip().lower()
+    if cmd == 'stop':
+      flag_stop = True

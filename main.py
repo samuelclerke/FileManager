@@ -1,11 +1,8 @@
 from modules.App import *
-import sys
-import tracemalloc
 
 def main():
   tracemalloc.start()
-  opt = getArg()
-  app = App(opt)
+  app = App()
   print(tracemalloc.get_traced_memory())
   tracemalloc.stop()
 
