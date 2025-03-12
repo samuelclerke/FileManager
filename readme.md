@@ -1,6 +1,6 @@
 # FileManager by Sam Clerke @samuelclerke
 **Version 0.0.2**\
-*Version Key {Major Version, Partial Version, Fixes/Minor Release}*
+*Version Key {Major, Minor, Hotfix/Patch}*
 
 ## :pushpin: Overview
 FileManager is a program developed in [Python](https://www.python.org/) utilising its operating system libraries to navigate and manipulate the users file structures. The program is designed to automatically sort the users folders and files to become more tidy and easier to navigate.
