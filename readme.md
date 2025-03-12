@@ -8,6 +8,7 @@ FileManager is a program developed in [Python](https://www.python.org/) utilisin
 ## :white_check_mark: Features
  - [x] Initial sorter for downloads folder.
  - [ ] Compatibility for user specified rules.
+ - [ ] Save states in a config file.
 
 ## :clipboard: Changelog
 **Version 0.0.2**
