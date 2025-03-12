@@ -13,6 +13,6 @@ FileManager is a program developed in [Python](https://www.python.org/) utilisin
 ## :clipboard: Changelog
 **Version 0.0.2**
 - Added basic startup process.
-- Started working on setup process and save state for custom user made settings.
+- Started working on setup process and save state for custom user made settings.\
 **Version 0.0.1**
 - Added initial sorting ability for the users downloads folder.
